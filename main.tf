@@ -64,7 +64,7 @@ locals {
 
 module "networking" {
   source = "./modules/networking"
-  environment                               = var.environment_prefix
+  environment_prefix                        = var.environment_prefix
   region                                    = var.region
   resource_group_name                       = local.resource_group_name
   vnet_cidr_full                            = local.vnet_cidr_full
@@ -78,7 +78,7 @@ module "networking" {
 
 module "databricks_workspace" {
   source = "./modules/databricks_workspace"
-  environment                 = var.environment_prefix
+  environment_prefix          = var.environment_prefix
   region                      = var.region
   subscription_id             = var.subscription_id
   tenant_id                   = var.tenant_id
