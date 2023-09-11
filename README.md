@@ -1,0 +1,1 @@
+Module to deploy a Databricks E2 workspace in AWS, with networking and permissions that will align to the Dataforge platform.
