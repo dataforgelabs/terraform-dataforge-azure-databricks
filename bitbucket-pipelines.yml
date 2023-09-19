@@ -2,7 +2,7 @@ clone:
   depth: full
 pipelines:
   branches:
-    master:
+    main:
       - step:
           name: Clone to GitHub
           script:
