@@ -4,27 +4,27 @@ variable "subscription_id" {
 }
 
 variable "tenant_id" {
-  description = "Azure tenant ID"
+  description = "Azure Tenant ID"
   type        = string
 }
 
 variable "application_client_id" {
-  description = "Azure client secret"
+  description = "Azure Active Directory App Registration client secret. Needs access to create a resource group and resources in the subscription"
   type        = string
 }
 
 variable "application_client_secret" {
-  description = "Azure client secret"
+  description = "Azure Active Directory App Registration client id. Needs access to create a resource group and resources in the subscription"
   type        = string
 }
 
 variable "region" {
-  description = "Azure region to deploy the environment to"
+  description = "Azure Region to deploy the environment to. Ex: East US 2"
   type        = string
 }
 
 variable "environment_prefix" {
-  description = "the environment to be deployed. Ex: Dev"
+  description = "The environment prefix for created resources naming. Ex: Dev"
   type        = string
   validation {
     condition     = length(var.environment_prefix) > 0
@@ -33,21 +33,21 @@ variable "environment_prefix" {
 }
 
 variable "existing_resource_group_name" {
-  description = "Full CIDR range for VPC. Ex: 10.1.0.0/16"
+  description = "Existing resource group to create Azure Databricks workspace in"
   type        = string
   default     = ""
 }
 
 variable "vnet_cidr_block" {
-  description = "Full CIDR range for VPC. Ex: 10.1.0.0/16"
+  description = "Full CIDR range for VPC. Ex: 10.1.0.0/16. Only use if not using the vnet_first_two_octets variable"
   type        = string
   default     = ""
 }
 
 variable "vnet_first_two_octets" {
-  description = "First two octets for VPC range, use if using IDO default deployment"
+  description = "First two octets for VPC range, use if using default module deployment"
   type        = string
-  default     = ""
+  default     = "173.1"
 }
 
 variable "existing_vnet_name" {
@@ -58,26 +58,26 @@ variable "existing_vnet_name" {
 
 
 variable "databricks_host_subnet" {
-  description = "host Subnet for Databricks, Ex: 10.1.128.0/18"
+  description = "Host subnet for Databricks, Ex: 10.1.128.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_host_subnet_name variable"
   type        = string
   default     = ""
 }
 
 
 variable "databricks_container_subnet" {
-  description = "container Subnet for Databricks, Ex: 10.1.192.0/18"
+  description = "Container subnet for Databricks, Ex: 10.1.192.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_container_subnet_name variable"
   type        = string
   default     = ""
 }
 
 variable "existing_databricks_host_subnet_name" {
-  description = "Existing host subnet to deploy Databricks workspace to"
+  description = "Existing host subnet name to deploy Databricks workspace to"
   type        = string
   default     = ""
 }
 
 variable "existing_databricks_container_subnet_name" {
-  description = "Existing container subnet to deploy Databricks workspace to"
+  description = "Existing container subnet name to deploy Databricks workspace to"
   type        = string
   default     = ""
 }
