@@ -1,5 +1,16 @@
 clone:
   depth: full
+  
+definitions:
+  steps:
+    -step: &snyk-test
+      name: snyk security scan
+      image: node:14
+      script:
+        - npm install -g snyk
+        - snyk auth $SNYK_TOKEN
+        - snyk iac test . --report || true
+            
 pipelines:
   branches:
     main:
@@ -8,3 +19,4 @@ pipelines:
           script:
             - git remote add upstream git@github.com:dataforgelabs/terraform-dataforge-azure-databricks.git
             - git push --force upstream $BITBUCKET_BRANCH
+      - step: *snyk-test      
