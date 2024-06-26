@@ -28,7 +28,7 @@ definitions:
           - TIMESTAMP=$(date +%F)
           - BACKUP_DIR="backup_${TIMESTAMP}"
           - ZIP_NAME="${BRANCH_NAME}_backup_${TIMESTAMP}.zip"
-          - S3_BUCKET="s3://df-sc-backups/source-code/terraform-azure-databricks-starter/"
+          - S3_BUCKET="s3://$CLONED_REPO_BUCKET_NAME/source-code/terraform-azure-databricks-starter/"
           - PREV_STATE_FILE="prev_state_${BRANCH_NAME}.txt"
           
           # Fetch the previous state file from S3 if it exists, otherwise create an empty file
