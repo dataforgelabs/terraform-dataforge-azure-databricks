@@ -3,13 +3,59 @@ clone:
   
 definitions:
   steps:
-    -step: &snyk-test
-      name: snyk security scan
-      image: node:14
-      script:
-        - npm install -g snyk
-        - snyk auth $SNYK_TOKEN
-        - snyk iac test . --report || true
+    - step: &snyk-test
+        name: snyk security scan
+        image: node:14
+        script:
+          - npm install -g snyk
+          - snyk auth $SNYK_TOKEN
+          - snyk iac test . --report || true
+
+    - step: &sync-to-s3
+        name: Incremental Backup and Upload to S3
+        image: atlassian/pipelines-awscli:1.16.302
+        caches:
+          - pip
+        script:
+          - apk update
+          - apk add zip
+
+          - export AWS_ACCESS_KEY_ID=$WMP_AWS_ACCESS_KEY_ID
+          - export AWS_SECRET_ACCESS_KEY=$WMP_AWS_ACCESS_KEY_SECRET
+          - export AWS_DEFAULT_REGION=$WMP_AWS_DEFAULT_REGION
+
+          - BRANCH_NAME=$BITBUCKET_BRANCH
+          - TIMESTAMP=$(date +%F)
+          - BACKUP_DIR="backup_${TIMESTAMP}"
+          - ZIP_NAME="${BRANCH_NAME}_backup_${TIMESTAMP}.zip"
+          - S3_BUCKET="s3://df-sc-backups/source-code/terraform-azure-databricks-starter/"
+          - PREV_STATE_FILE="prev_state_${BRANCH_NAME}.txt"
+          
+          # Fetch the previous state file from S3 if it exists, otherwise create an empty file
+          - aws s3 cp $S3_BUCKET$PREV_STATE_FILE $PREV_STATE_FILE || touch $PREV_STATE_FILE
+          # Get the previous commit hash
+          - PREV_COMMIT=$(cat $PREV_STATE_FILE 2>/dev/null || echo "")  
+          # Check if there are changes since the last commit
+          - |
+              if [ "$(git rev-parse HEAD)" != "$PREV_COMMIT" ]; then
+                # Create a full copy of the repository
+                mkdir -p full_backup
+                git archive HEAD | tar -x -C full_backup
+                
+                # Zip the backup directory
+                zip -r $ZIP_NAME full_backup
+                
+                # Upload the zip file to S3
+                aws s3 cp $ZIP_NAME $S3_BUCKET
+                
+                # Update the previous state file with the latest commit hash
+                git rev-parse HEAD > $PREV_STATE_FILE
+                
+                # Upload the updated state file to S3
+                aws s3 cp $PREV_STATE_FILE $S3_BUCKET$PREV_STATE_FILE
+              else
+                echo "No changes detected. Skipping upload to S3."
+              fi    
             
 pipelines:
   branches:
@@ -19,4 +65,5 @@ pipelines:
           script:
             - git remote add upstream git@github.com:dataforgelabs/terraform-dataforge-azure-databricks.git
             - git push --force upstream $BITBUCKET_BRANCH
-      - step: *snyk-test      
+      - step: *snyk-test
+      - step: *sync-to-s3       
