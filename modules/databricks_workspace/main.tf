@@ -142,7 +142,7 @@ resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
 
   name                     = "unity_catalog_external_location"
-  metastore_id             = databricks_metastore.unity_catalog[0].metastore_id
+  metastore_id             = databricks_metastore.unity_catalog[0].id
   credential_name          = databricks_storage_credential.unity_catalog_storage[0].name
   url                      = "abfss://${var.environment_prefix}-data@${azurerm_storage_account.datalake.name}.dfs.core.windows.net/"
 }
