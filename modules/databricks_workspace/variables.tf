@@ -26,6 +26,10 @@ variable "resource_group_name" {
   type = string
 }
 
+variable "resource_group_location" {
+  type = string
+}
+
 variable "host_subnet" {
   type = object({
     id   = string
@@ -53,5 +57,9 @@ variable "vnet_id" {
 }
 
 variable "databricks_workspace_sku" {
+  type = string
+}
+
+variable "enable_unity_catalog" {
   type = string
 }

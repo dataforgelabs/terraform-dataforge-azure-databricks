@@ -45,12 +45,12 @@ resource "azuread_application" "databricks_main" {
 }
 
 resource "azuread_application_password" "databricks" {
-  application_object_id = azuread_application.databricks_main.id
+  application_id        = azuread_application.databricks_main.id
   end_date              = "2040-01-01T01:02:03Z"
 }
 
 resource "azuread_service_principal" "main" {
-  application_id               = azuread_application.databricks_main.application_id
+  client_id                    = azuread_application.databricks_main.application_id
   app_role_assignment_required = false
 }
 
@@ -87,6 +87,8 @@ resource "databricks_sql_global_config" "this" {
 }
 
 resource "databricks_mount" "datalake_mount" {
+  //count = var.enable_unity_catalog ? 0 : 1
+  
   name = "datalake"
   abfs {
     container_name         = azurerm_storage_data_lake_gen2_filesystem.datalake.name
@@ -98,5 +100,66 @@ resource "databricks_mount" "datalake_mount" {
     initialize_file_system = true
   }
 
+}
+
+resource "databricks_metastore" "unity_catalog" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  name          = "${var.environment_prefix}-UnityCatalog"
+  storage_root  = "abfss://${var.environment_prefix}-unity-catalog@${azurerm_storage_account.datalake.name}.dfs.core.windows.net/"
+  region        = var.region
+  owner         = "admins"
+}
+
+resource "databricks_metastore_assignment" "workspace_binding" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  workspace_id = azurerm_databricks_workspace.main.workspace_id
+  metastore_id = databricks_metastore.unity_catalog[0].id
+}
+
+
+resource "azurerm_user_assigned_identity" "databricks_identity" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  name                = "${var.environment_prefix}-databricks-identity"
+  resource_group_name = var.resource_group_name
+  location            = var.resource_group_location
+}
+
+resource "databricks_storage_credential" "unity_catalog_storage" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  name         = "unity_catalog_storage_credential"
+  metastore_id = databricks_metastore.unity_catalog[0].id
+
+  azure_managed_identity {
+    access_connector_id = azurerm_user_assigned_identity.databricks_identity.id
+  }
+}
+
+resource "databricks_external_location" "unity_catalog_location" {
+  count                    = var.enable_unity_catalog ? 1 : 0
+
+  name                     = "unity_catalog_external_location"
+  metastore_id             = databricks_metastore.unity_catalog[0].metastore_id
+  credential_name          = databricks_storage_credential.unity_catalog_storage[0].name
+  url                      = "abfss://${var.environment_prefix}-data@${azurerm_storage_account.datalake.name}.dfs.core.windows.net/"
+}
+
+resource "databricks_catalog" "main_catalog" {
+  count        = var.enable_unity_catalog ? 1 : 0
+
+  name         = "dataforge_catalog"
+  comment      = "Main Catalog"
+  metastore_id = databricks_metastore.unity_catalog[0].id
+}
+
+resource "databricks_schema" "dataforge" {
+  count        = var.enable_unity_catalog ? 1 : 0
+
+  name         = "dataforge"
+  catalog_name = databricks_catalog.main_catalog[0].name
+  comment      = "Schema for DataForge application"
 }
 
