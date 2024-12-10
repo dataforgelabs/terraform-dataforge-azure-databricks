@@ -45,12 +45,12 @@ resource "azuread_application" "databricks_main" {
 }
 
 resource "azuread_application_password" "databricks" {
-  application_id        = azuread_application.databricks_main.id
+  application_object_id        = azuread_application.databricks_main.id
   end_date              = "2040-01-01T01:02:03Z"
 }
 
 resource "azuread_service_principal" "main" {
-  client_id                    = azuread_application.databricks_main.application_id
+  application_id                    = azuread_application.databricks_main.application_id
   app_role_assignment_required = false
 }
 
@@ -88,7 +88,7 @@ resource "databricks_sql_global_config" "this" {
 
 resource "databricks_mount" "datalake_mount" {
   //count = var.enable_unity_catalog ? 0 : 1
-  
+
   name = "datalake"
   abfs {
     container_name         = azurerm_storage_data_lake_gen2_filesystem.datalake.name
@@ -134,7 +134,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
   metastore_id = databricks_metastore.unity_catalog[0].id
 
   azure_managed_identity {
-    access_connector_id = azurerm_user_assigned_identity.databricks_identity.id
+    access_connector_id = azurerm_user_assigned_identity.databricks_identity[0].id
   }
 }
 
