@@ -50,7 +50,6 @@ resource "azuread_application_password" "databricks" {
 }
 
 resource "azuread_service_principal" "main" {
-  provider                     = databricks.account
   application_id               = azuread_application.databricks_main.application_id
   app_role_assignment_required = false
 }
@@ -90,7 +89,7 @@ resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = databricks_group.admins[0].id
-  member_id  = azuread_service_principal.main.id
+  member_id  = azuread_service_principal.main.client_id
   depends_on = [azurerm_databricks_workspace.main]
 }
 
@@ -163,23 +162,19 @@ resource "azurerm_databricks_access_connector" "unity" {
   name                = "${var.environment_prefix}-databricks-access-connector"
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
+
+  identity {
+        type = "SystemAssigned"
+      }
 }
 
-resource "azurerm_role_assignment" "unity_catalog" {
-  count = var.enable_unity_catalog ? 1 : 0
+//resource "azurerm_role_assignment" "unity_catalog" {
+  //count = var.enable_unity_catalog ? 1 : 0
 
-  scope                = azurerm_storage_account.datalake.id
-  role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azurerm_databricks_access_connector.unity[0].identity[0].principal_id
-}
-
-resource "azurerm_user_assigned_identity" "databricks_identity" {
-  count = var.enable_unity_catalog ? 1 : 0
-
-  name                = "${var.environment_prefix}-databricks-identity"
-  resource_group_name = var.resource_group_name
-  location            = var.resource_group_location
-}
+  //scope                = azurerm_storage_account.datalake.id
+  //role_definition_name = "Storage Blob Data Contributor"
+  //principal_id         = azurerm_databricks_access_connector.unity[0].identity[0].principal_id
+//}
 
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
@@ -214,10 +209,11 @@ resource "databricks_metastore_data_access" "primary" {
   metastore_id = databricks_metastore.unity_catalog[0].id
   name         = "primary"
   azure_managed_identity {
-    access_connector_id = azurerm_user_assigned_identity.databricks_identity[0].id
+    access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
 
   is_default = true
+  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 
