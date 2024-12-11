@@ -106,9 +106,10 @@ resource "databricks_metastore" "unity_catalog" {
   count = var.enable_unity_catalog ? 1 : 0
 
   name          = "${var.environment_prefix}-UnityCatalog"
-  storage_root  = "abfss://${var.environment_prefix}-unity-catalog@${azurerm_storage_account.datalake.name}.dfs.core.windows.net/"
+  storage_root = format("abfss://%s@%s.dfs.core.windows.net/",
+    azurerm_storage_data_lake_gen2_filesystem.datalake.name,
+    azurerm_storage_account.datalake.name)
   region        = var.region
-  owner         = "admins"
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
