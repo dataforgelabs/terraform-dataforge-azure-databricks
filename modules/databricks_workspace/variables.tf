@@ -63,3 +63,7 @@ variable "databricks_workspace_sku" {
 variable "enable_unity_catalog" {
   type = string
 }
+
+variable "databricks_workspace_admin_email" {
+  type = string
+}

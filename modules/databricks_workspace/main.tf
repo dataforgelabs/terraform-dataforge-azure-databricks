@@ -61,6 +61,26 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
+data "databricks_group" "admins" {
+  count        = var.databricks_workspace_admin_email != "" ? 1 : 0
+  display_name = "admins"
+  depends_on   = [azurerm_databricks_workspace.main]
+}
+
+resource "databricks_user" "admin" {
+  count      = var.databricks_workspace_admin_email != "" ? 1 : 0
+  user_name  = var.databricks_workspace_admin_email
+  depends_on = [azurerm_databricks_workspace.main]
+}
+
+resource "databricks_group_member" "admin" {
+  count      = var.databricks_workspace_admin_email != "" ? 1 : 0
+  group_id   = data.databricks_group.admins[0].id
+  member_id  = databricks_user.admin[0].id
+  depends_on = [azurerm_databricks_workspace.main]
+}
+
+
 resource "databricks_secret_scope" "ad_principal_secret" {
   name                     = "adprincipal"
   initial_manage_principal = "users"
@@ -110,6 +130,7 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
+  owner         = var.databricks_workspace_admin_email
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
