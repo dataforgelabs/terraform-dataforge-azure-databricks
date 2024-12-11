@@ -70,6 +70,13 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
+data "databricks_service_principal" "terraform_spn" {
+  count    = var.enable_unity_catalog ? 1 : 0
+  provider = databricks.account
+
+  application_id = var.application_client_id
+}
+
 resource "databricks_group" "admins" {
   provider = databricks.account
   count    = var.enable_unity_catalog ? 1 : 0
@@ -96,7 +103,7 @@ resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = databricks_group.admins[0].id
-  member_id  = databricks_user.admin[0].id
+  member_id  = databricks_user.terraform_spn[0].id
   depends_on = [azurerm_databricks_workspace.main]
 }
 
@@ -163,6 +170,21 @@ resource "databricks_metastore_assignment" "workspace_binding" {
   depends_on = [ databricks_metastore.unity_catalog ]
 }
 
+resource "azurerm_databricks_access_connector" "unity" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  name                = "${var.environment_prefix}-databricks-access-connector"
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_role_assignment" "unity_catalog" {
+  count = var.enable_unity_catalog ? 1 : 0
+
+  scope                = azurerm_storage_account.datalake.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_databricks_access_connector.unity[0].identity[0].principal_id
+}
 
 resource "azurerm_user_assigned_identity" "databricks_identity" {
   count = var.enable_unity_catalog ? 1 : 0
