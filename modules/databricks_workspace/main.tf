@@ -89,7 +89,7 @@ resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = databricks_group.admins[0].id
-  member_id  = azuread_service_principal.main.client_id
+  member_id  = azuread_service_principal.main.id
   depends_on = [azurerm_databricks_workspace.main]
 }
 
@@ -183,7 +183,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
   metastore_id = databricks_metastore.unity_catalog[0].id
 
   azure_managed_identity {
-    access_connector_id = azurerm_user_assigned_identity.databricks_identity[0].id
+    access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
 }
 
