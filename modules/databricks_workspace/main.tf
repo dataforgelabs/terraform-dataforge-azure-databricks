@@ -50,7 +50,8 @@ resource "azuread_application_password" "databricks" {
 }
 
 resource "azuread_service_principal" "main" {
-  application_id                    = azuread_application.databricks_main.application_id
+  provider                     = databricks.account
+  application_id               = azuread_application.databricks_main.application_id
   app_role_assignment_required = false
 }
 
@@ -68,13 +69,6 @@ provider "databricks" {
   azure_tenant_id             = var.tenant_id
   azure_client_id             = var.application_client_id
   azure_client_secret         = var.application_client_secret
-}
-
-data "databricks_service_principal" "terraform_spn" {
-  count    = var.enable_unity_catalog ? 1 : 0
-  provider = databricks.account
-
-  application_id = var.application_client_id
 }
 
 resource "databricks_group" "admins" {
