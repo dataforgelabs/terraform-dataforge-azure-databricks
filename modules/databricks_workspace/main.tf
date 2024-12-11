@@ -61,19 +61,31 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
+provider "databricks" {
+  alias                       = "account"
+  host                        = "https://accounts.azuredatabricks.net"
+  account_id                  = var.databricks_account_id
+  azure_tenant_id             = var.tenant_id
+  azure_client_id             = var.application_client_id
+  azure_client_secret         = var.application_client_secret
+}
+
 data "databricks_group" "admins" {
+  provider     = databricks.account
   count        = var.enable_unity_catalog ? 1 : 0
   display_name = "admins"
   depends_on   = [azurerm_databricks_workspace.main]
 }
 
 resource "databricks_user" "admin" {
+  provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   user_name  = var.databricks_workspace_admin_email
   depends_on = [azurerm_databricks_workspace.main]
 }
 
 resource "databricks_group_member" "admin" {
+  provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = data.databricks_group.admins[0].id
   member_id  = databricks_user.admin[0].id
