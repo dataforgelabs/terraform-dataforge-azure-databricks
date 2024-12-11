@@ -62,19 +62,19 @@ provider "databricks" {
 }
 
 data "databricks_group" "admins" {
-  count        = var.databricks_workspace_admin_email != "" ? 1 : 0
+  count        = var.enable_unity_catalog ? 1 : 0
   display_name = "admins"
   depends_on   = [azurerm_databricks_workspace.main]
 }
 
 resource "databricks_user" "admin" {
-  count      = var.databricks_workspace_admin_email != "" ? 1 : 0
+  count      = var.enable_unity_catalog ? 1 : 0
   user_name  = var.databricks_workspace_admin_email
   depends_on = [azurerm_databricks_workspace.main]
 }
 
 resource "databricks_group_member" "admin" {
-  count      = var.databricks_workspace_admin_email != "" ? 1 : 0
+  count      = var.enable_unity_catalog ? 1 : 0
   group_id   = data.databricks_group.admins[0].id
   member_id  = databricks_user.admin[0].id
   depends_on = [azurerm_databricks_workspace.main]
@@ -174,7 +174,7 @@ resource "databricks_catalog" "main_catalog" {
   name         = "dataforge_catalog"
   comment      = "Main Catalog"
   metastore_id = databricks_metastore.unity_catalog[0].id
-  owner        = var.databricks_workspace_admin_email
+  owner        = var.databricks_workspace_admin_email 
 }
 
 resource "databricks_schema" "dataforge" {
