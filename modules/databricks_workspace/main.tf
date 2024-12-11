@@ -80,7 +80,6 @@ resource "databricks_group_member" "admin" {
   depends_on = [azurerm_databricks_workspace.main]
 }
 
-
 resource "databricks_secret_scope" "ad_principal_secret" {
   name                     = "adprincipal"
   initial_manage_principal = "users"
@@ -175,6 +174,7 @@ resource "databricks_catalog" "main_catalog" {
   name         = "dataforge_catalog"
   comment      = "Main Catalog"
   metastore_id = databricks_metastore.unity_catalog[0].id
+  owner        = var.databricks_workspace_admin_email
 }
 
 resource "databricks_schema" "dataforge" {
