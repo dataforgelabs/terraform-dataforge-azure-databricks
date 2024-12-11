@@ -70,10 +70,18 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
-data "databricks_group" "admins" {
-  provider     = databricks.account
-  count        = var.enable_unity_catalog ? 1 : 0
-  display_name = "admins"
+resource "databricks_group" "admins" {
+  provider = databricks.account
+  count    = var.enable_unity_catalog ? 1 : 0
+
+  display_name = "Unity Catalog Admins"
+  
+  workspace_access      = true
+  databricks_sql_access = true
+  
+  allow_cluster_create       = true
+  allow_instance_pool_create = true
+
   depends_on   = [azurerm_databricks_workspace.main]
 }
 
@@ -141,7 +149,9 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
-  owner         = var.databricks_workspace_admin_email
+  owner         = databricks_group.admins.display_name
+
+  depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
@@ -149,6 +159,8 @@ resource "databricks_metastore_assignment" "workspace_binding" {
 
   workspace_id = azurerm_databricks_workspace.main.workspace_id
   metastore_id = databricks_metastore.unity_catalog[0].id
+
+  depends_on = [ databricks_metastore.unity_catalog ]
 }
 
 
@@ -187,6 +199,37 @@ resource "databricks_catalog" "main_catalog" {
   comment      = "Main Catalog"
   metastore_id = databricks_metastore.unity_catalog[0].id
   owner        = var.databricks_workspace_admin_email 
+}
+
+resource "databricks_metastore_data_access" "primary" {
+  metastore_id = databricks_metastore.unity_catalog[0].id
+  name         = "primary"
+  azure_managed_identity {
+    access_connector_id = azurerm_user_assigned_identity.databricks_identity[0].id
+  }
+
+  is_default = true
+}
+
+
+resource "databricks_grants" "primary" {
+  metastore = databricks_metastore.unity_catalog[0].id
+  grant {
+    principal  = var.application_client_id
+    privileges = ["CREATE_CATALOG", "CREATE_EXTERNAL_LOCATION"]
+  }
+
+  depends_on = [ databricks_metastore_data_access.primary ]
+}
+
+resource "databricks_grants" "lab" {
+  catalog = databricks_catalog.unity_catalog[0].name
+
+  grant {
+    principal  = "Unity Catalog Admins"
+    privileges = ["ALL_PRIVILEGES"]
+  }
+  
 }
 
 resource "databricks_schema" "dataforge" {
