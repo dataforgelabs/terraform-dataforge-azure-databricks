@@ -95,7 +95,7 @@ resource "databricks_user" "admin" {
 resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
-  group_id   = data.databricks_group.admins[0].id
+  group_id   = databricks_group.admins[0].id
   member_id  = databricks_user.admin[0].id
   depends_on = [azurerm_databricks_workspace.main]
 }
@@ -149,7 +149,7 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
-  owner         = databricks_group.admins.display_name
+  owner         = databricks_group.admins[0].display_name
 
   depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
 }
@@ -213,6 +213,8 @@ resource "databricks_metastore_data_access" "primary" {
 
 
 resource "databricks_grants" "primary" {
+  count = var.enable_unity_catalog ? 1 : 0
+
   metastore = databricks_metastore.unity_catalog[0].id
   grant {
     principal  = var.application_client_id
@@ -223,7 +225,9 @@ resource "databricks_grants" "primary" {
 }
 
 resource "databricks_grants" "lab" {
-  catalog = databricks_catalog.unity_catalog[0].name
+  count = var.enable_unity_catalog ? 1 : 0
+
+  catalog = databricks_catalog.main_catalog[0].name
 
   grant {
     principal  = "Unity Catalog Admins"
