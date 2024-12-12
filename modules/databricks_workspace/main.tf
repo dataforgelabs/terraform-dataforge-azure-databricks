@@ -70,22 +70,6 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
-resource "databricks_group" "admins" {
-  provider = databricks.account
-  count    = var.enable_unity_catalog ? 1 : 0
-
-  display_name = "Unity Catalog Admins"
-  
-  workspace_access      = true
-  databricks_sql_access = true
-  
-  allow_cluster_create       = true
-  allow_instance_pool_create = true
-
-  depends_on   = [azurerm_databricks_workspace.main]
-}
-
-
 resource "databricks_secret_scope" "ad_principal_secret" {
   name                     = "adprincipal"
   initial_manage_principal = "users"
@@ -135,7 +119,7 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
-  owner         = databricks_group.admins[0].display_name
+  owner         = var.databricks_workspace_admin_email
 
   depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
 }
