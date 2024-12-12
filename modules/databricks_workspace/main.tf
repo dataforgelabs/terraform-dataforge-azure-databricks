@@ -85,11 +85,18 @@ resource "databricks_group" "admins" {
   depends_on   = [azurerm_databricks_workspace.main]
 }
 
+resource "databricks_user" "admin_user" {
+  user_name                = var.databricks_workspace_admin_email
+  display_name             = "Admin User"
+  allow_cluster_create     = true
+  allow_instance_pool_create = true
+}
+
 resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = databricks_group.admins[0].id
-  member_id  = azuread_service_principal.main.id
+  member_id  = databricks_user.admin_user.id
   depends_on = [azurerm_databricks_workspace.main]
 }
 
@@ -135,6 +142,7 @@ resource "databricks_mount" "datalake_mount" {
 }
 
 resource "databricks_metastore" "unity_catalog" {
+  provider             = databricks.accounts
   count = var.enable_unity_catalog ? 1 : 0
 
   name          = "${var.environment_prefix}-UnityCatalog"
@@ -148,6 +156,7 @@ resource "databricks_metastore" "unity_catalog" {
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
+  provider             = databricks.accounts
   count = var.enable_unity_catalog ? 1 : 0
 
   workspace_id = azurerm_databricks_workspace.main.workspace_id
