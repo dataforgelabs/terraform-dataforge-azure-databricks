@@ -92,11 +92,15 @@ resource "databricks_user" "admin_user" {
   allow_instance_pool_create = true
 }
 
+data "databricks_user" "admin_user" {
+  user_name = var.databricks_workspace_admin_email
+}
+
 resource "databricks_group_member" "admin" {
   provider   = databricks.account
   count      = var.enable_unity_catalog ? 1 : 0
   group_id   = databricks_group.admins[0].id
-  member_id  = databricks_user.admin_user.id
+  member_id  = data.databricks_user.admin_user.id
   depends_on = [azurerm_databricks_workspace.main]
 }
 
