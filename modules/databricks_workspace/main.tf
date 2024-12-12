@@ -142,7 +142,6 @@ resource "databricks_mount" "datalake_mount" {
 }
 
 resource "databricks_metastore" "unity_catalog" {
-  provider             = databricks.accounts
   count = var.enable_unity_catalog ? 1 : 0
 
   name          = "${var.environment_prefix}-UnityCatalog"
@@ -156,7 +155,6 @@ resource "databricks_metastore" "unity_catalog" {
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
-  provider             = databricks.accounts
   count = var.enable_unity_catalog ? 1 : 0
 
   workspace_id = azurerm_databricks_workspace.main.workspace_id
