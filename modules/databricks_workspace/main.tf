@@ -85,11 +85,9 @@ resource "databricks_group" "admins" {
   depends_on   = [azurerm_databricks_workspace.main]
 }
 
-resource "databricks_user" "admin_user" {
-  user_name                = var.databricks_workspace_admin_email
-  display_name             = "Admin User"
-  allow_cluster_create     = true
-  allow_instance_pool_create = true
+data "databricks_user" "admin_user" {
+  provider   = databricks.account
+  user_name = var.databricks_workspace_admin_email
 }
 
 resource "databricks_group_member" "admin" {
