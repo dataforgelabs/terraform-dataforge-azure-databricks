@@ -119,7 +119,7 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
-  owner         = var.databricks_workspace_admin_email
+  owner         = azuread_service_principal.main.application_id
 
   depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
 }
