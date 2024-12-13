@@ -196,7 +196,7 @@ resource "databricks_grants" "primary" {
 
   metastore = databricks_metastore.unity_catalog[0].id
   grant {
-    principal  = var.databricks_workspace_admin_email
+    principal  = azuread_application.databricks_main.application_id
     privileges = ["CREATE_CATALOG", "CREATE_EXTERNAL_LOCATION"]
   }
 
@@ -209,7 +209,7 @@ resource "databricks_grants" "lab" {
   catalog = databricks_catalog.main_catalog[0].name
 
   grant {
-    principal  = var.databricks_workspace_admin_email
+    principal  = azuread_application.databricks_main.application_id
     privileges = ["ALL_PRIVILEGES"]
   }
   
