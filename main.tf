@@ -96,5 +96,4 @@ module "databricks_workspace" {
   databricks_workspace_sku         = var.databricks_workspace_sku
   enable_unity_catalog             = var.enable_unity_catalog
   databricks_workspace_admin_email = var.databricks_workspace_admin_email
-  databricks_account_id            = var.databricks_account_id
 }

@@ -105,8 +105,3 @@ variable "databricks_workspace_admin_email" {
   type        = string
   default     = ""
 }
-
-variable "databricks_account_id" {
-  description = "Databricks root account id, found in the Accounts console."
-  type        = string
-}
