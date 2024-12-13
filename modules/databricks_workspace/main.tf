@@ -12,6 +12,10 @@ terraform {
 }
 
 locals {
+  default_catalog = [
+    for catalog in data.databricks_catalogs.all.ids : catalog
+    if strcontains(catalog, var.environment_prefix)
+  ]
   commonTags = {
     Environment = var.environment_prefix
   }
@@ -102,23 +106,33 @@ resource "databricks_mount" "datalake_mount" {
 
 }
 
-resource "databricks_metastore" "unity_catalog" {
-  count = var.enable_unity_catalog ? 1 : 0
+data "databricks_metastore" "existing_metastore" {
+  for_each = toset(var.enable_unity_catalog ? [var.region] : [])
+  region   = each.value
+}
 
-  name          = "${var.environment_prefix}-UnityCatalog"
+resource "databricks_metastore" "unity_catalog" {
+  count = var.enable_unity_catalog && length(data.databricks_metastore.existing_metastore) == 0  ? 1 : 0
+  name          = "${var.environment_prefix}_unitycatalog"
   storage_root = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   region        = var.region
-  //owner         = azuread_service_principal.main.application_id
   force_destroy = true
 
   depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
 }
 
-resource "databricks_metastore_assignment" "workspace_binding" {
-  count = var.enable_unity_catalog ? 1 : 0
+resource "databricks_metastore_assignment" "existing_binding" {
+  count          = var.enable_unity_catalog && length(local.data.databricks_metastore.existing_metastore) > 0 ? 1 : 0
+  metastore_id   = data.databricks_metastore.existing_metastore[0].id 
+  workspace_id   = azurerm_databricks_workspace.main.workspace_id
 
+  depends_on = [ databricks_metastore.unity_catalog ]
+}
+
+resource "databricks_metastore_assignment" "workspace_binding" {
+  count        = var.enable_unity_catalog && length(local.data.databricks_metastore.existing_metastore) == 0 ? 1 : 0
   workspace_id = azurerm_databricks_workspace.main.workspace_id
   metastore_id = databricks_metastore.unity_catalog[0].id
 
@@ -127,7 +141,6 @@ resource "databricks_metastore_assignment" "workspace_binding" {
 
 resource "azurerm_databricks_access_connector" "unity" {
   count = var.enable_unity_catalog ? 1 : 0
-
   name                = "${var.environment_prefix}-databricks-access-connector"
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
@@ -139,7 +152,6 @@ resource "azurerm_databricks_access_connector" "unity" {
 
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
-
   name         = azuread_application.databricks_main.display_name
   azure_service_principal {
     directory_id   = var.tenant_id
@@ -155,7 +167,6 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
 
 resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
-
   name                     = "unity_catalog_external_location"
   metastore_id             = databricks_metastore.unity_catalog[0].id
   credential_name          = databricks_storage_credential.unity_catalog_storage[0].id
@@ -167,15 +178,15 @@ resource "databricks_external_location" "unity_catalog_location" {
 }
 
 resource "databricks_catalog" "main_catalog" {
-  count        = var.enable_unity_catalog ? 1 : 0
-
-  name         = "dataforge_catalog"
-  comment      = "Main Catalog"
+  count        = var.enable_unity_catalog && length(local.default_catalog) == 0 ? 1 : 0
+  name         = "${var.environment_prefix}_catalog"
+  comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
   owner        = var.databricks_workspace_admin_email 
 }
 
 resource "databricks_metastore_data_access" "primary" {
+  count = var.enable_unity_catalog ? 1 : 0
   metastore_id = databricks_metastore.unity_catalog[0].id
   name         = "primary"
   azure_managed_identity {
@@ -189,7 +200,6 @@ resource "databricks_metastore_data_access" "primary" {
 
 resource "databricks_grants" "primary" {
   count = var.enable_unity_catalog ? 1 : 0
-
   metastore = databricks_metastore.unity_catalog[0].id
   grant {
     principal  = var.application_client_id
@@ -201,7 +211,6 @@ resource "databricks_grants" "primary" {
 
 resource "databricks_grants" "lab" {
   count = var.enable_unity_catalog ? 1 : 0
-
   catalog = databricks_catalog.main_catalog[0].name
 
   grant {
@@ -212,12 +221,17 @@ resource "databricks_grants" "lab" {
 }
 
 resource "databricks_schema" "dataforge" {
-  count        = var.enable_unity_catalog ? 1 : 0
-
+  count        = var.enable_unity_catalog && length(local.default_catalog) == 0 ? 1 : 0
   name         = "dataforge"
   catalog_name = databricks_catalog.main_catalog[0].name
   comment      = "Schema for DataForge application"
 
   depends_on = [ databricks_grants.lab ]
+}
+
+resource "databricks_schema" "dataforge" {
+  count        = var.enable_unity_catalog && length(local.default_catalog) > 0 ? 1 : 0
+  catalog_name = local.default_catalog[0]
+  name         = "dataforge"
 }
 
