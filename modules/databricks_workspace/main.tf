@@ -229,7 +229,7 @@ resource "databricks_schema" "dataforge" {
   depends_on = [ databricks_grants.lab ]
 }
 
-resource "databricks_schema" "dataforge" {
+resource "databricks_schema" "dataforge_existing" {
   count        = var.enable_unity_catalog && length(local.default_catalog) > 0 ? 1 : 0
   catalog_name = local.default_catalog[0]
   name         = "dataforge"
