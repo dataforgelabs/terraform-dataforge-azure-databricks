@@ -164,7 +164,7 @@ resource "databricks_external_location" "unity_catalog_location" {
 
   name                     = "unity_catalog_external_location"
   metastore_id             = databricks_metastore.unity_catalog[0].id
-  credential_name          = databricks_storage_credential.unity_catalog_storage[0].name
+  credential_name          = databricks_storage_credential.unity_catalog_storage[0].id
   url                      = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
