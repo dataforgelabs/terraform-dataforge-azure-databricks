@@ -221,5 +221,7 @@ resource "databricks_schema" "dataforge" {
   name         = "dataforge"
   catalog_name = databricks_catalog.main_catalog[0].name
   comment      = "Schema for DataForge application"
+
+  depends_on = [ databricks_grants.lab ]
 }
 
