@@ -61,15 +61,6 @@ provider "databricks" {
   azure_client_secret         = var.application_client_secret
 }
 
-provider "databricks" {
-  alias                       = "account"
-  host                        = "https://accounts.azuredatabricks.net"
-  account_id                  = var.databricks_account_id
-  azure_tenant_id             = var.tenant_id
-  azure_client_id             = var.application_client_id
-  azure_client_secret         = var.application_client_secret
-}
-
 resource "databricks_secret_scope" "ad_principal_secret" {
   name                     = "adprincipal"
   initial_manage_principal = "users"
@@ -113,7 +104,7 @@ resource "databricks_mount" "datalake_mount" {
 
 resource "databricks_metastore" "unity_catalog" {
   count = var.enable_unity_catalog ? 1 : 0
-  provider      = databricks.account
+
   name          = "${var.environment_prefix}-UnityCatalog"
   storage_root = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
