@@ -113,7 +113,7 @@ resource "databricks_mount" "datalake_mount" {
 
 resource "databricks_metastore" "unity_catalog" {
   count = var.enable_unity_catalog ? 1 : 0
-
+  provider      = databricks.account
   name          = "${var.environment_prefix}-UnityCatalog"
   storage_root = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
