@@ -123,7 +123,7 @@ resource "databricks_metastore" "unity_catalog" {
 
 resource "databricks_metastore_assignment" "existing_binding" {
   count          = var.enable_unity_catalog && data.databricks_current_metastore.this.id == "" ? 1 : 0
-  metastore_id   = data.databricks_current_metastore.this.metastore_id 
+  metastore_id   = data.databricks_current_metastore.this.id 
   workspace_id   = azurerm_databricks_workspace.main.workspace_id
 
   depends_on = [ databricks_metastore.unity_catalog ]
