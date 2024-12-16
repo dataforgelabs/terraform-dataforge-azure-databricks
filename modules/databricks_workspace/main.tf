@@ -57,7 +57,7 @@ resource "azuread_application_password" "databricks" {
 }
 
 resource "azuread_service_principal" "main" {
-  client_id               = azuread_application.databricks_main.application_id
+  client_id               = azuread_application.databricks_main.client_id
   app_role_assignment_required = false
 }
 
