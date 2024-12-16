@@ -12,6 +12,7 @@ terraform {
 }
 
 data "databricks_catalogs" "all" {}
+data "azuread_client_config" "current" {}
 
 locals {
   default_catalog = [
