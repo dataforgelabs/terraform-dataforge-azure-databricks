@@ -53,7 +53,7 @@ resource "azuread_application" "databricks_main" {
 }
 
 resource "azuread_application_password" "databricks" {
-  application_id        = azuread_application.databricks_main.object_id
+  application_id        = azuread_application.databricks_main.id
   end_date              = "2040-01-01T01:02:03Z"
 }
 
