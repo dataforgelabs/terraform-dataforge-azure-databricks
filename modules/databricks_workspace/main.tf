@@ -132,7 +132,7 @@ resource "databricks_metastore_assignment" "existing_binding" {
 resource "databricks_metastore_assignment" "workspace_binding" {
   count        = var.enable_unity_catalog && data.databricks_current_metastore.this.id != "" ? 1 : 0
   workspace_id = azurerm_databricks_workspace.main.workspace_id
-  metastore_id = databricks_metastore.unity_catalog[0].id
+  metastore_id = databricks_metastore.unity_catalog.id
 
   depends_on = [ databricks_metastore.unity_catalog ]
 }
@@ -179,7 +179,7 @@ resource "databricks_catalog" "main_catalog" {
   count        = var.enable_unity_catalog && length(local.default_catalog) == 0 ? 1 : 0
   name         = "${var.environment_prefix}_catalog"
   comment      = "Main Catalog for ${var.environment_prefix}"
-  metastore_id = databricks_metastore.unity_catalog[0].id
+  metastore_id = databricks_metastore.unity_catalog.id
   owner        = var.databricks_workspace_admin_email 
 }
 
