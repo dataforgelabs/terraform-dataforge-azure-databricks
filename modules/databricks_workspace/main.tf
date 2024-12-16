@@ -101,7 +101,7 @@ resource "databricks_mount" "datalake_mount" {
     container_name         = azurerm_storage_data_lake_gen2_filesystem.datalake.name
     storage_account_name   = azurerm_storage_account.datalake.name
     tenant_id              = var.tenant_id
-    client_id              = azuread_service_principal.main.application_id
+    client_id              = azuread_service_principal.main.client_id
     client_secret_scope    = databricks_secret_scope.ad_principal_secret.name
     client_secret_key      = databricks_secret.service_principal_key.key
     initialize_file_system = true
