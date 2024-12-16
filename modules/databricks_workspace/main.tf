@@ -110,7 +110,7 @@ resource "databricks_mount" "datalake_mount" {
 }
 
 resource "databricks_metastore" "unity_catalog" {
-  count = var.enable_unity_catalog && data.databricks_current_metastore.this.id == "" ? 1 : 0
+  count = var.enable_unity_catalog && data.databricks_current_metastore.this.id == "no_metastore" ? 1 : 0
   name          = "${var.environment_prefix}_unitycatalog"
   storage_root = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
@@ -122,7 +122,7 @@ resource "databricks_metastore" "unity_catalog" {
 }
 
 resource "databricks_metastore_assignment" "existing_binding" {
-  count          = var.enable_unity_catalog && data.databricks_current_metastore.this.id == "" ? 1 : 0
+  count          = var.enable_unity_catalog && data.databricks_current_metastore.this.id != "no_metastore" ? 1 : 0
   metastore_id   = data.databricks_current_metastore.this.id 
   workspace_id   = azurerm_databricks_workspace.main.workspace_id
 
@@ -130,7 +130,7 @@ resource "databricks_metastore_assignment" "existing_binding" {
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
-  count        = var.enable_unity_catalog && data.databricks_current_metastore.this.id != "" ? 1 : 0
+  count        = var.enable_unity_catalog && data.databricks_current_metastore.this.id == "no_metastore" ? 1 : 0
   workspace_id = azurerm_databricks_workspace.main.workspace_id
   metastore_id = databricks_metastore.unity_catalog[0].id
 
