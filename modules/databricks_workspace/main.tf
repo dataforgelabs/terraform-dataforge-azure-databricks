@@ -11,14 +11,9 @@ terraform {
   }
 }
 
-data "databricks_catalogs" "all" {}
 data "azuread_client_config" "current" {}
 
 locals {
-  default_catalog = [
-    for catalog in data.databricks_catalogs.all.ids : catalog
-    if strcontains(catalog, var.environment_prefix)
-  ]
   commonTags = {
     Environment = var.environment_prefix
   }
@@ -58,7 +53,7 @@ resource "azuread_application_password" "databricks" {
 }
 
 resource "azuread_service_principal" "main" {
-  client_id               = azuread_application.databricks_main.client_id
+  client_id                    = azuread_application.databricks_main.client_id
   app_role_assignment_required = false
   owners                       = [data.azuread_client_config.current.object_id]
 }
@@ -174,7 +169,7 @@ resource "databricks_external_location" "unity_catalog_location" {
 }
 
 resource "databricks_catalog" "main_catalog" {
-  count        = var.enable_unity_catalog && length(local.default_catalog) == 0 ? 1 : 0
+  count        = var.enable_unity_catalog ? 1 : 0
   name         = "${var.environment_prefix}_catalog"
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
@@ -217,17 +212,10 @@ resource "databricks_grants" "lab" {
 }
 
 resource "databricks_schema" "dataforge" {
-  count        = var.enable_unity_catalog && length(local.default_catalog) == 0 ? 1 : 0
+  count        = var.enable_unity_catalog ? 1 : 0
   name         = "dataforge"
   catalog_name = databricks_catalog.main_catalog[0].name
   comment      = "Schema for DataForge application"
 
   depends_on = [ databricks_grants.lab ]
 }
-
-resource "databricks_schema" "dataforge_existing" {
-  count        = var.enable_unity_catalog && length(local.default_catalog) > 0 ? 1 : 0
-  catalog_name = local.default_catalog[0]
-  name         = "dataforge"
-}
-
