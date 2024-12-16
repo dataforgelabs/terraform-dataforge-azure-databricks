@@ -52,12 +52,12 @@ resource "azuread_application" "databricks_main" {
 }
 
 resource "azuread_application_password" "databricks" {
-  application_object_id        = azuread_application.databricks_main.id
+  application_id        = azuread_application.databricks_main.id
   end_date              = "2040-01-01T01:02:03Z"
 }
 
 resource "azuread_service_principal" "main" {
-  application_id               = azuread_application.databricks_main.application_id
+  client_id               = azuread_application.databricks_main.application_id
   app_role_assignment_required = false
 }
 
@@ -84,7 +84,7 @@ resource "databricks_sql_global_config" "this" {
   data_access_config = {
     "spark.hadoop.fs.azure.account.auth.type" : "OAuth",
     "spark.hadoop.fs.azure.account.oauth.provider.type" : "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
-    "spark.hadoop.fs.azure.account.oauth2.client.id" : "${azuread_application.databricks_main.application_id}",
+    "spark.hadoop.fs.azure.account.oauth2.client.id" : "${azuread_application.databricks_main.client_id}",
     "spark.hadoop.fs.azure.account.oauth2.client.secret" : "{{secrets/adprincipal/service_principal_key}}",
     "spark.hadoop.fs.azure.account.oauth2.client.endpoint" : "https://login.microsoftonline.com/${var.tenant_id}/oauth2/token"
   }
