@@ -55,11 +55,13 @@ resource "azuread_application" "databricks_main" {
 resource "azuread_application_password" "databricks" {
   application_id        = azuread_application.databricks_main.id
   end_date              = "2040-01-01T01:02:03Z"
+  application_object_id = azuread_application.databricks_main.id
 }
 
 resource "azuread_service_principal" "main" {
   client_id               = azuread_application.databricks_main.client_id
   app_role_assignment_required = false
+  application_id               = azuread_application.databricks_main.application_id
   owners                       = [data.azuread_client_config.current.object_id]
 }
 
