@@ -157,11 +157,11 @@ resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
   name                     = "unity_catalog_external_location"
   credential_name          = databricks_storage_credential.unity_catalog_storage[0].id
-  url                      = format("abfss://%s@%s.dfs.core.windows.net/",
+  url                      = format("abfss://%s@%s.dfs.core.windows.net",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
 
-    depends_on = [ databricks_metastore_assignment.workspace_binding ]
+ depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_catalog" "main_catalog" {
