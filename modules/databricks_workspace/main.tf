@@ -177,7 +177,7 @@ resource "databricks_catalog" "main_catalog" {
   name         = "${var.environment_prefix}_catalog"
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
-  owner        = var.application_client_id
+  owner        = var.databricks_workspace_admin_email
 }
 
 resource "databricks_metastore_data_access" "primary" {
