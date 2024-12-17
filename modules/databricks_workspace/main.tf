@@ -152,6 +152,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
   azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
+  owner   = var.application_client_id
 
   depends_on               = [ databricks_metastore_assignment.workspace_binding ] 
 }
