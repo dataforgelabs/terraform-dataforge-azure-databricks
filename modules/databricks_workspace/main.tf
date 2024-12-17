@@ -119,7 +119,7 @@ resource "databricks_metastore" "unity_catalog" {
   region        = var.region
   force_destroy = true
 
-  depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake]
+  depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake, azurerm_role_assignment.databricks_account_contributor, azurerm_role_assignment.databricks_data_contributor]
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
@@ -173,7 +173,7 @@ resource "databricks_catalog" "main_catalog" {
   name         = "${var.environment_prefix}_catalog"
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
-  owner        = var.databricks_workspace_admin_email 
+  owner        = var.application_client_id
 }
 
 resource "databricks_metastore_data_access" "primary" {
