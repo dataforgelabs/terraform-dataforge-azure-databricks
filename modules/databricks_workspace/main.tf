@@ -157,8 +157,6 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
   azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
-
-  owner   = var.databricks_workspace_admin_email
 }
 
 resource "databricks_external_location" "unity_catalog_location" {
@@ -218,8 +216,8 @@ resource "databricks_grants" "lab" {
 resource "databricks_grants" "external_creds" {
   storage_credential = databricks_storage_credential.unity_catalog_storage[0].id
   grant {
-    principal  = var.application_client_id
-    privileges = ["CREATE_EXTERNAL_TABLE"]
+    principal  = var.databricks_workspace_admin_email
+    privileges = ["ALL_PRIVILEGES"]
   }
 }
 
