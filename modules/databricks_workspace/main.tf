@@ -142,6 +142,14 @@ resource "azurerm_databricks_access_connector" "unity" {
       }
 }
 
+resource "azurerm_role_assignment" "databricks_storage_contributor" {
+  principal_id         = azurerm_databricks_access_connector.unity[0].identity[0].principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_account.datalake.id
+
+  depends_on = [ azurerm_databricks_access_connector.unity ]
+}
+
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
   name  = azurerm_databricks_access_connector.unity[0].name
