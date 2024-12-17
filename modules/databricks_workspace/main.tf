@@ -165,6 +165,8 @@ resource "databricks_external_location" "unity_catalog_location" {
   url                      = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
+
+    depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_catalog" "main_catalog" {
@@ -194,8 +196,6 @@ resource "databricks_grants" "primary" {
     principal  = var.application_client_id
     privileges = ["CREATE_CATALOG", "CREATE_EXTERNAL_LOCATION"]
   }
-
-  depends_on = [ databricks_metastore_data_access.primary ]
 }
 
 resource "databricks_grants" "lab" {
