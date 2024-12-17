@@ -165,6 +165,7 @@ resource "databricks_external_location" "unity_catalog_location" {
   url                      = format("abfss://%s@%s.dfs.core.windows.net",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
+  owner        = var.databricks_workspace_admin_email
 
  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
