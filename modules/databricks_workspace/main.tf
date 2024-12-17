@@ -114,9 +114,6 @@ resource "databricks_mount" "datalake_mount" {
 resource "databricks_metastore" "unity_catalog" {
   count = var.enable_unity_catalog ? 1 : 0
   name          = "${var.environment_prefix}_unitycatalog"
-  storage_root = format("abfss://%s@%s.dfs.core.windows.net/meta/",
-    azurerm_storage_data_lake_gen2_filesystem.datalake.name,
-    azurerm_storage_account.datalake.name)
   region        = var.region
   force_destroy = true
 
