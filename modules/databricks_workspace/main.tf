@@ -140,16 +140,16 @@ resource "azurerm_databricks_access_connector" "unity" {
         type = "SystemAssigned"
       }
 }
-/**
+
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
-  name  = "${azuread_application.databricks_main.display_name}-storage"
+  name  = azurerm_databricks_access_connector.unity[0].name
 
-  azure_service_principal {
-    directory_id   = var.tenant_id
-    application_id = var.application_client_id
-    client_secret  = var.application_client_secret
+   azure_managed_identity {
+    access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
+
+  depends_on            = [ databricks_metastore_assignment.workspace_binding ]  
 }
 
 
@@ -163,7 +163,6 @@ resource "databricks_external_location" "unity_catalog_location" {
 
   depends_on               = [ databricks_metastore_assignment.workspace_binding ]  
 }
-**/
 
 resource "databricks_catalog" "main_catalog" {
   count        = var.enable_unity_catalog ? 1 : 0
@@ -207,7 +206,7 @@ resource "databricks_grants" "lab" {
   }
   
 }
-/**
+
 resource "databricks_grants" "external_creds" {
   storage_credential = databricks_storage_credential.unity_catalog_storage[0].id
   grant {
@@ -215,7 +214,15 @@ resource "databricks_grants" "external_creds" {
     privileges = ["ALL_PRIVILEGES"]
   }
 }
-**/
+
+resource "databricks_grants" "some" {
+  external_location = databricks_external_location.unity_catalog_location[0].id
+  grant {
+    principal  = var.application_client_id
+    privileges = ["CREATE_EXTERNAL_TABLE", "READ_FILES"]
+  }
+}
+
 resource "databricks_schema" "dataforge" {
   count        = var.enable_unity_catalog ? 1 : 0
   name         = "dataforge"
