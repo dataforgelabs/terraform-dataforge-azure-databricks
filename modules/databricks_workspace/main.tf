@@ -118,7 +118,6 @@ resource "databricks_metastore" "unity_catalog" {
     azurerm_storage_account.datalake.name)
   region        = var.region
   force_destroy = true
-  owner = var.databricks_workspace_admin_email
 
   depends_on = [azurerm_storage_data_lake_gen2_filesystem.datalake, azurerm_storage_account.datalake, azurerm_role_assignment.databricks_account_contributor, azurerm_role_assignment.databricks_data_contributor]
 }
