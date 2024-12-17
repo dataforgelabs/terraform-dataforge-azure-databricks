@@ -175,6 +175,8 @@ resource "databricks_catalog" "main_catalog" {
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
   owner        = var.databricks_workspace_admin_email
+
+  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_grants" "primary" {
@@ -184,6 +186,8 @@ resource "databricks_grants" "primary" {
     principal  = var.application_client_id
     privileges = ["CREATE_CATALOG", "CREATE_EXTERNAL_LOCATION"]
   }
+
+  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_grants" "lab" {
