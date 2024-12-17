@@ -144,12 +144,14 @@ resource "azurerm_databricks_access_connector" "unity" {
 
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
-  name         = azuread_application.databricks_main.display_name
+  name  = azurerm_databricks_access_connector.unity.name
   
   azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
   owner   = var.databricks_workspace_admin_email
+
+  depends_on               = [ databricks_metastore_assignment.workspace_binding ] 
 }
 
 resource "databricks_external_location" "unity_catalog_location" {
