@@ -62,6 +62,14 @@ resource "azuread_service_principal_password" "example" {
   service_principal_id = azuread_service_principal.main.id
 }
 
+resource "azurerm_role_assignment" "owner" {
+  scope                = var.resource_group_id
+  role_definition_name = "Owner"
+  principal_id         = azuread_service_principal.main.object_id
+
+  depends_on = [azurerm_resource_group.main]
+}
+
 provider "databricks" {
   azure_workspace_resource_id = azurerm_databricks_workspace.main.id
   azure_tenant_id             = var.tenant_id
