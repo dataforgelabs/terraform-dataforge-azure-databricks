@@ -210,7 +210,7 @@ resource "databricks_grants" "lab" {
 }
 
 resource "databricks_grants" "external_creds" {
-  storage_credential = databricks_storage_credential.unity_catalog_storage.id
+  storage_credential = databricks_storage_credential.unity_catalog_storage[0].id
   grant {
     principal  = var.application_client_id
     privileges = ["CREATE_EXTERNAL_TABLE"]
