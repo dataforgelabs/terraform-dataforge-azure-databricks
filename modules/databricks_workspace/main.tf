@@ -143,7 +143,7 @@ resource "azurerm_databricks_access_connector" "unity" {
 
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
-  name  = azuread_application.databricks_main.display_name
+  name  = "${azuread_application.databricks_main.display_name}-storage"
   force_destroy = true
 
 
