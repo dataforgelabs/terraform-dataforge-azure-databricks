@@ -156,10 +156,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
    azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
-
-  depends_on            = [ databricks_metastore_assignment.workspace_binding ]  
-}
-
+} 
 
 resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
@@ -168,8 +165,6 @@ resource "databricks_external_location" "unity_catalog_location" {
   url                      = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
-
-  depends_on               = [ databricks_metastore_assignment.workspace_binding ]  
 }
 
 resource "databricks_catalog" "main_catalog" {
@@ -189,7 +184,6 @@ resource "databricks_metastore_data_access" "primary" {
   }
 
   is_default = true
-  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 
