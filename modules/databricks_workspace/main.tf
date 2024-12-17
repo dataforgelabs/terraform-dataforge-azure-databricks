@@ -144,7 +144,7 @@ resource "azurerm_databricks_access_connector" "unity" {
 
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
-  name  = azurerm_databricks_access_connector.unity.name
+  name  = azurerm_databricks_access_connector.unity[0].name
   
   azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
@@ -207,6 +207,14 @@ resource "databricks_grants" "lab" {
     privileges = ["ALL_PRIVILEGES"]
   }
   
+}
+
+resource "databricks_grants" "external_creds" {
+  storage_credential = databricks_storage_credential.unity_catalog_storage.id
+  grant {
+    principal  = var.application_client_id
+    privileges = ["CREATE_EXTERNAL_TABLE"]
+  }
 }
 
 resource "databricks_schema" "dataforge" {
