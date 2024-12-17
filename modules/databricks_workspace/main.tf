@@ -145,11 +145,7 @@ resource "azurerm_databricks_access_connector" "unity" {
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
   name         = azuread_application.databricks_main.display_name
-  azure_service_principal {
-    directory_id   = var.tenant_id
-    application_id = var.application_client_id
-    client_secret  = var.application_client_secret
-  }
+  
   azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
