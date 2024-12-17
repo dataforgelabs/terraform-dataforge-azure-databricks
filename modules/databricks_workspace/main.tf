@@ -152,6 +152,10 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
     client_secret  = var.application_client_secret
   }
 
+  azure_managed_identity {
+    access_connector_id = azurerm_databricks_access_connector.unity[0].id
+  }
+
   owner   = var.databricks_workspace_admin_email
 
   depends_on               = [ databricks_metastore_assignment.workspace_binding ] 
@@ -160,7 +164,6 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
 resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
   name                     = "unity_catalog_external_location"
-  //metastore_id             = databricks_metastore.unity_catalog[0].id
   credential_name          = databricks_storage_credential.unity_catalog_storage[0].id
   url                      = format("abfss://%s@%s.dfs.core.windows.net/",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
