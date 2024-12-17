@@ -37,14 +37,10 @@ resource "azurerm_role_assignment" "databricks_account_contributor" {
   scope                = azurerm_storage_account.datalake.id
   role_definition_name = "Storage Account Contributor"
   principal_id         = azuread_service_principal.main.object_id
-
-  depends_on = [ azurerm_role_assignment.owner]
 }
 
 resource "azurerm_role_assignment" "databricks_data_contributor" {
   scope                = azurerm_storage_account.datalake.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azuread_service_principal.main.object_id
-
-  depends_on = [ azurerm_role_assignment.owner ]
 }
