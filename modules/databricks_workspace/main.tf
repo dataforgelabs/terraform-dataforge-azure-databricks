@@ -140,7 +140,7 @@ resource "azurerm_databricks_access_connector" "unity" {
         type = "SystemAssigned"
       }
 }
-
+/**
 resource "databricks_storage_credential" "unity_catalog_storage" {
   count = var.enable_unity_catalog ? 1 : 0
   name  = "${azuread_application.databricks_main.display_name}-storage"
@@ -152,6 +152,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
   }
 }
 
+
 resource "databricks_external_location" "unity_catalog_location" {
   count                    = var.enable_unity_catalog ? 1 : 0
   name                     = "unity_catalog_external_location"
@@ -162,6 +163,7 @@ resource "databricks_external_location" "unity_catalog_location" {
 
   depends_on               = [ databricks_metastore_assignment.workspace_binding ]  
 }
+**/
 
 resource "databricks_catalog" "main_catalog" {
   count        = var.enable_unity_catalog ? 1 : 0
@@ -205,7 +207,7 @@ resource "databricks_grants" "lab" {
   }
   
 }
-
+/**
 resource "databricks_grants" "external_creds" {
   storage_credential = databricks_storage_credential.unity_catalog_storage[0].id
   grant {
@@ -213,7 +215,7 @@ resource "databricks_grants" "external_creds" {
     privileges = ["ALL_PRIVILEGES"]
   }
 }
-
+**/
 resource "databricks_schema" "dataforge" {
   count        = var.enable_unity_catalog ? 1 : 0
   name         = "dataforge"
