@@ -152,6 +152,8 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
     client_secret  = var.application_client_secret
   }
 
+  owner   = var.databricks_workspace_admin_email
+
   depends_on               = [ databricks_metastore_assignment.workspace_binding ] 
 }
 
