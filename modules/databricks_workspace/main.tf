@@ -150,8 +150,6 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
   owner   = var.databricks_workspace_admin_email
-
-  depends_on               = [ databricks_metastore_assignment.workspace_binding ] 
 }
 
 resource "databricks_external_location" "unity_catalog_location" {
