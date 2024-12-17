@@ -155,7 +155,7 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
 
-  depends_on            = [ databricks_metastore_assignment.workspace_binding ] 
+  depends_on = [ databricks_metastore_assignment.workspace_binding ] 
 } 
 
 resource "databricks_external_location" "unity_catalog_location" {
@@ -176,20 +176,6 @@ resource "databricks_catalog" "main_catalog" {
   metastore_id = databricks_metastore.unity_catalog[0].id
   owner        = var.databricks_workspace_admin_email
 }
-
-resource "databricks_metastore_data_access" "primary" {
-  count = var.enable_unity_catalog ? 1 : 0
-  metastore_id = databricks_metastore.unity_catalog[0].id
-  name         = "primary"
-  azure_managed_identity {
-    access_connector_id = azurerm_databricks_access_connector.unity[0].id
-  }
-
-  is_default = true
-
- depends_on = [ azurerm_databricks_access_connector.unity, databricks_metastore.unity_catalog, databricks_metastore_assignment.workspace_binding ]
-}
-
 
 resource "databricks_grants" "primary" {
   count = var.enable_unity_catalog ? 1 : 0
