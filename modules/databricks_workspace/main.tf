@@ -174,6 +174,9 @@ resource "databricks_catalog" "main_catalog" {
   name         = "${var.environment_prefix}_catalog"
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
+  storage_root = format("abfss://%s@%s.dfs.core.windows.net",
+    azurerm_storage_data_lake_gen2_filesystem.datalake.name,
+    azurerm_storage_account.datalake.name)
   owner        = var.databricks_workspace_admin_email
 
   depends_on = [ databricks_metastore_assignment.workspace_binding ]
