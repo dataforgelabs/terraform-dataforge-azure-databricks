@@ -210,7 +210,7 @@ resource "databricks_grants" "lab" {
 resource "databricks_grants" "external_creds" {
   storage_credential = databricks_storage_credential.unity_catalog_storage[0].id
   grant {
-    principal  = var.databricks_workspace_admin_email
+    principal  = var.application_client_id
     privileges = ["ALL_PRIVILEGES"]
   }
 }
@@ -219,7 +219,7 @@ resource "databricks_grants" "some" {
   external_location = databricks_external_location.unity_catalog_location[0].id
   grant {
     principal  = var.application_client_id
-    privileges = ["CREATE_EXTERNAL_TABLE", "READ_FILES"]
+    privileges = ["ALL_PRIVILEGES"]
   }
 }
 
