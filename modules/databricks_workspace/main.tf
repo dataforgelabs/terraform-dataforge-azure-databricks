@@ -149,6 +149,8 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
    azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
+
+  depends_on            = [ databricks_metastore_assignment.workspace_binding ] 
 } 
 
 resource "databricks_external_location" "unity_catalog_location" {
@@ -179,6 +181,8 @@ resource "databricks_metastore_data_access" "primary" {
   }
 
   is_default = true
+
+ depends_on = [ azurerm_databricks_access_connector.unity, databricks_metastore.unity_catalog, databricks_metastore_assignment.workspace_binding ]
 }
 
 
