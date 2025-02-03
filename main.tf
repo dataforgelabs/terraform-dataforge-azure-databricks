@@ -9,15 +9,15 @@ terraform {
   required_providers {
     databricks = {
       source  = "databricks/databricks"
-      version = "1.18.0"
+      version = "1.61.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.43.0"
+      version = "4.14.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "2.25.0"
+      version = "3.0.2"
     }
   }
 }
@@ -60,6 +60,8 @@ resource "azurerm_resource_group" "main" {
 
 locals {
   resource_group_name = var.existing_resource_group_name == "" ? azurerm_resource_group.main[0].name : var.existing_resource_group_name
+  resource_group_location = var.existing_resource_group_location == "" ? azurerm_resource_group.main[0].location : var.existing_resource_group_location
+
 }
 
 module "networking" {
@@ -78,17 +80,20 @@ module "networking" {
 
 module "databricks_workspace" {
   source = "./modules/databricks_workspace"
-  environment_prefix          = var.environment_prefix
-  region                      = var.region
-  subscription_id             = var.subscription_id
-  tenant_id                   = var.tenant_id
-  application_client_id       = var.application_client_id
-  application_client_secret   = var.application_client_secret
-  resource_group_name         = local.resource_group_name
-  host_subnet                 = module.networking.host_subnet
-  container_subnet            = module.networking.container_subnet
-  host_sg_association_id      = module.networking.host_sg_association_id
-  container_sg_association_id = module.networking.container_sg_association_id
-  vnet_id                     = module.networking.vnet_id
-  databricks_workspace_sku    = var.databricks_workspace_sku
+  environment_prefix               = var.environment_prefix
+  region                           = var.region
+  subscription_id                  = var.subscription_id
+  tenant_id                        = var.tenant_id
+  application_client_id            = var.application_client_id
+  application_client_secret        = var.application_client_secret
+  resource_group_name              = local.resource_group_name
+  resource_group_location          = local.resource_group_location
+  host_subnet                      = module.networking.host_subnet
+  container_subnet                 = module.networking.container_subnet
+  host_sg_association_id           = module.networking.host_sg_association_id
+  container_sg_association_id      = module.networking.container_sg_association_id
+  vnet_id                          = module.networking.vnet_id
+  databricks_workspace_sku         = var.databricks_workspace_sku
+  enable_unity_catalog             = var.enable_unity_catalog
+  databricks_workspace_admin_email = var.databricks_workspace_admin_email
 }

@@ -38,6 +38,12 @@ variable "existing_resource_group_name" {
   default     = ""
 }
 
+variable "existing_resource_group_location" {
+  description = "Existing resource group to create Azure Databricks workspace in"
+  type        = string
+  default     = ""
+}
+
 variable "vnet_cidr_block" {
   description = "Full CIDR range for VPC. Ex: 10.1.0.0/16. Only use if not using the vnet_first_two_octets variable"
   type        = string
@@ -86,4 +92,16 @@ variable "databricks_workspace_sku" {
   description = "The SKU to use for the Databricks Workspace. Possible values are standard, premium, or trial"
   type        = string
   default     = "premium"
+}
+
+variable "enable_unity_catalog" {
+  description = "Flag to enable Unity Catalog"
+  type        = bool
+  default     = false
+}
+
+variable "databricks_workspace_admin_email" {
+  description = "If using a service principal, add an admin account that will be the first user granted access to the workspace. If using user email/password, this is not needed, as that user will have access to the workspace."
+  type        = string
+  default     = ""
 }
