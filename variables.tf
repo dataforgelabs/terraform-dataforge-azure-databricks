@@ -100,7 +100,7 @@ variable "enable_unity_catalog" {
   default     = false
 }
 
-variable "enable_unity_catalog" {
+variable "add_metastore" {
   description = "set to true when no metastore in the region"
   type        = bool
   default     = false
