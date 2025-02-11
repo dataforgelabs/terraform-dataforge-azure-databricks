@@ -67,3 +67,7 @@ variable "enable_unity_catalog" {
 variable "databricks_workspace_admin_email" {
   type = string
 }
+
+variable "add_metastore" {
+  type = string
+}

@@ -100,6 +100,12 @@ variable "enable_unity_catalog" {
   default     = false
 }
 
+variable "enable_unity_catalog" {
+  description = "set to true when no metastore in the region"
+  type        = bool
+  default     = false
+}
+
 variable "databricks_workspace_admin_email" {
   description = "If using a service principal, add an admin account that will be the first user granted access to the workspace. If using user email/password, this is not needed, as that user will have access to the workspace."
   type        = string
