@@ -112,7 +112,7 @@ resource "databricks_mount" "datalake_mount" {
 }
 
 resource "databricks_metastore" "unity_catalog" {
-  count = var.enable_unity_catalog ? 1 : 0
+  count = var.enable_unity_catalog && var.add_metastore ? 1 : 0
   name          = "${var.environment_prefix}_unitycatalog"
   region        = var.region
   force_destroy = true
@@ -121,7 +121,7 @@ resource "databricks_metastore" "unity_catalog" {
 }
 
 resource "databricks_metastore_assignment" "workspace_binding" {
-  count        = var.enable_unity_catalog ? 1 : 0
+  count        = var.enable_unity_catalog && var.add_metastore ? 1 : 0
   workspace_id = azurerm_databricks_workspace.main.workspace_id
   metastore_id = databricks_metastore.unity_catalog[0].id
 
@@ -154,8 +154,6 @@ resource "databricks_storage_credential" "unity_catalog_storage" {
    azure_managed_identity {
     access_connector_id = azurerm_databricks_access_connector.unity[0].id
   }
-
-  depends_on = [ databricks_metastore_assignment.workspace_binding ] 
 } 
 
 resource "databricks_external_location" "unity_catalog_location" {
@@ -165,22 +163,18 @@ resource "databricks_external_location" "unity_catalog_location" {
   url                      = format("abfss://%s@%s.dfs.core.windows.net",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
-  owner        = var.databricks_workspace_admin_email
-
- depends_on = [ databricks_metastore_assignment.workspace_binding ]
+  owner                    = var.databricks_workspace_admin_email
 }
 
 resource "databricks_catalog" "main_catalog" {
   count        = var.enable_unity_catalog ? 1 : 0
-  name         = "${var.environment_prefix}_catalog"
+  name         = "${var.environment_prefix}"
   comment      = "Main Catalog for ${var.environment_prefix}"
   metastore_id = databricks_metastore.unity_catalog[0].id
   storage_root = format("abfss://%s@%s.dfs.core.windows.net",
     azurerm_storage_data_lake_gen2_filesystem.datalake.name,
     azurerm_storage_account.datalake.name)
   owner        = var.databricks_workspace_admin_email
-
-  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_grants" "primary" {
@@ -190,8 +184,6 @@ resource "databricks_grants" "primary" {
     principal  = var.application_client_id
     privileges = ["CREATE_CATALOG", "CREATE_EXTERNAL_LOCATION"]
   }
-
-  depends_on = [ databricks_metastore_assignment.workspace_binding ]
 }
 
 resource "databricks_grants" "lab" {
@@ -219,13 +211,4 @@ resource "databricks_grants" "some" {
     principal  = var.application_client_id
     privileges = ["ALL_PRIVILEGES"]
   }
-}
-
-resource "databricks_schema" "dataforge" {
-  count        = var.enable_unity_catalog ? 1 : 0
-  name         = "dataforge"
-  catalog_name = databricks_catalog.main_catalog[0].name
-  comment      = "Schema for DataForge application"
-
-  depends_on = [ databricks_grants.lab ]
 }
