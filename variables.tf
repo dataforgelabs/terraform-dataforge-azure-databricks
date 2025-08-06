@@ -45,13 +45,13 @@ variable "existing_resource_group_location" {
 }
 
 variable "vnet_cidr_block" {
-  description = "Full CIDR range for VPC. Ex: 10.1.0.0/16. Only use if not using the vnet_first_two_octets variable"
+  description = "Full CIDR range for VPC. DataForge default is 173.1.0.0/16. Only use if not using the vnet_first_two_octets variable"
   type        = string
   default     = ""
 }
 
 variable "vnet_first_two_octets" {
-  description = "First two octets for VPC range, use if using default module deployment"
+  description = "First two octets for VPC range, use if using default module deployment. DataForge default is 173.1"
   type        = string
   default     = "173.1"
 }
@@ -64,14 +64,14 @@ variable "existing_vnet_name" {
 
 
 variable "databricks_host_subnet" {
-  description = "Host subnet for Databricks, Ex: 10.1.128.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_host_subnet_name variable"
+  description = "Host subnet for Databricks, DataForge default is 173.1.128.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_host_subnet_name variable"
   type        = string
   default     = ""
 }
 
 
 variable "databricks_container_subnet" {
-  description = "Container subnet for Databricks, Ex: 10.1.192.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_container_subnet_name variable"
+  description = "Container subnet for Databricks, DataForge default is 173.1.192.0/18. Only use if not using the vnet_first_two_octets variable. Needs to be defined if using the existing_databricks_container_subnet_name variable"
   type        = string
   default     = ""
 }
